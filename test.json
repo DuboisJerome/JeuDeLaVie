@@ -1,0 +1,49 @@
+{
+  "longueur": 150,
+  "largeur": 150,
+  "listeGroupes": [
+    {
+      "id": 0,
+      "nom": "Groupe cellules",
+      "typesCreesPonderes": {
+        "Cellule": 1
+      },
+      "conditionsReproduction": [
+        {
+          "operations": {
+            "Cellule": [
+              {
+                "ope": "EGAL",
+                "valeurComparaison": 3
+              }
+            ]
+          }
+        },
+        {
+          "typePrecondition": {
+            "id": 0,
+            "nom": "Cellule"
+          },
+          "operations": {
+            "Cellule": [
+              {
+                "ope": "SUP_EGAL",
+                "valeurComparaison": 2
+              },
+              {
+                "ope": "INF_EGAL",
+                "valeurComparaison": 3
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "listeTypeEtreVivant": [
+    {
+      "id": 0,
+      "nom": "Cellule"
+    }
+  ]
+}
