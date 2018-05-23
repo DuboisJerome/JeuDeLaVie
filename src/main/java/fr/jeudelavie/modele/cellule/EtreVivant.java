@@ -5,17 +5,36 @@ import com.google.gson.GsonBuilder;
 
 import fr.jeudelavie.modele.carte.Case;
 import lombok.Getter;
-import lombok.Setter;
 
 public class EtreVivant {
 
 	@Getter
-	@Setter
-	private Case caseCourrante;
+	private final Case caseCourrante;
 
 	@Getter
-	@Setter
-	private TypeEtreVivant type;
+	private final TypeEtreVivant type;
+
+	private int numGeneration = 1;
+
+	private static final int NB_GENERATION_MAX = 5;
+
+	private final int dureeVie;
+
+	public EtreVivant(final Case c, final TypeEtreVivant t) {
+		this.caseCourrante = c;
+		this.type = t;
+		this.dureeVie = NB_GENERATION_MAX;
+	}
+
+	/** @return isMourrante */
+	public boolean vieillir() {
+		this.numGeneration++;
+		return this.numGeneration > this.dureeVie;
+	}
+
+	public void mourir() {
+		this.caseCourrante.getListeEtreVivant().remove(this);
+	}
 
 	@Override
 	public String toString() {

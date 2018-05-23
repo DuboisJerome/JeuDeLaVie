@@ -154,7 +154,7 @@ public class FenetrePrincipale extends JFrame implements Observer {
 		this.parametres = new Parametres();
 		this.parametres.getObservable().addObserver(this);
 		this.observableParametres.addObserver(this.parametres);
-		this.parametres.setJeuDeLaVie2();
+		this.parametres.setJeuDeLaVie();
 		this.carte = this.parametres.genererCarte();
 		final int w = this.parametres.getLongueur() * CarteUI.LARGEUR_CASE;
 		final int h = this.parametres.getLargeur() * CarteUI.HAUTEUR_CASE;

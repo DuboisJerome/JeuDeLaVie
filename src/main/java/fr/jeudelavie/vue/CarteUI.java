@@ -3,6 +3,9 @@ package fr.jeudelavie.vue;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.swing.JPanel;
 
@@ -27,21 +30,31 @@ public class CarteUI extends JPanel {
 		setLayout(new BorderLayout());
 	}
 
-	private static Color getCouleur(final EtreVivant e) {
-		if (e == null || e.getType() == null) {
+	private static Color getCouleur(final Collection<EtreVivant> liste) {
+		if (liste == null || liste.isEmpty()) {
 			return Color.WHITE;
 		} else {
-			return e.getType().getCouleur();
+			final List<Color> couleurs = liste.stream()
+					.filter(e -> e != null && e.getType() != null && e.getType().getCouleur() != null)
+					.map(e -> e.getType().getCouleur()).collect(Collectors.toList());
+			int r = 0, g = 0, b = 0;
+			for (final Color c : couleurs) {
+				r += c.getRed();
+				g += c.getGreen();
+				b += c.getBlue();
+			}
+			final int nbCouleurs = couleurs.size();
+			return new Color(r / nbCouleurs, g / nbCouleurs, b / nbCouleurs);
 		}
 	}
 
 	@Override
 	public void paintComponent(final Graphics g) {
 		super.paintComponent(g);
-		this.carte.visiter(c -> {
+		this.carte.stream().forEach(c -> {
 			final int x = c.getX() * LARGEUR_CASE;
 			final int y = c.getY() * HAUTEUR_CASE;
-			g.setColor(getCouleur(c.getEtreVivant()));
+			g.setColor(getCouleur(c.getListeEtreVivant()));
 			g.fillRect(x, y, LARGEUR_CASE, HAUTEUR_CASE);
 		});
 	}

@@ -1,5 +1,6 @@
 package fr.jeudelavie.modele.carte;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -7,11 +8,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.collections4.CollectionUtils;
+
 import fr.jeudelavie.modele.Parametres;
 import fr.jeudelavie.modele.cellule.EtreVivant;
+import fr.jeudelavie.modele.cellule.GroupeReproduction;
 import fr.jeudelavie.modele.cellule.TypeEtreVivant;
 import lombok.Getter;
 
@@ -26,7 +31,7 @@ public class Case implements Observer {
 	private final Map<Direction, Case> voisines = new HashMap<>();
 
 	@Getter
-	private EtreVivant etreVivant;
+	private final List<EtreVivant> listeEtreVivant = new ArrayList<>();
 
 	protected Case() {
 		this(0, 0);
@@ -77,43 +82,40 @@ public class Case implements Observer {
 		this.voisines.put(Direction.SUDEST, c);
 	};
 
-	public TypeEtreVivant getTypeEtreVivant() {
-		return this.etreVivant != null ? this.etreVivant.getType() : null;
-	}
-
-	public void setTypeEtreVivant(final TypeEtreVivant newType) {
-		final TypeEtreVivant t = getTypeEtreVivant();
-		if (t != newType) {
-			if (newType == null) {
-				setEtreVivant(null);
-			} else {
-				final EtreVivant e = new EtreVivant();
-				e.setCaseCourrante(this);
-				e.setType(newType);
-				setEtreVivant(e);
-			}
-		}
-	}
-
-	public void setEtreVivant(final EtreVivant e) {
-		this.etreVivant = e;
-	}
-
 	@Override
 	public void update(final Observable o, final Object arg) {}
 
-	public TypeEtreVivant calculerProchaineGeneration(final Parametres params) {
-		final List<TypeEtreVivant> typesVoisines = this.voisines.values().stream()
-				.filter(v -> v.etreVivant != null && v.etreVivant.getType() != null).map(v -> v.etreVivant.getType())
-				.collect(Collectors.toList());
+	public EtreVivant calculerProchaineGeneration(final Parametres params) {
+		final List<EtreVivant> listeEtreVivantTmp = new ArrayList<>();
+		listeEtreVivantTmp.addAll(this.listeEtreVivant);
+		// reproduction avec voisines
+		this.voisines.values().stream().filter(v -> CollectionUtils.isNotEmpty(v.getListeEtreVivant()))
+				.forEach(v -> v.getListeEtreVivant().stream().forEach(e -> listeEtreVivantTmp.add(e)));
 
-		final Map<TypeEtreVivant, Long> map = typesVoisines.stream()
+		final Map<TypeEtreVivant, Long> map = listeEtreVivantTmp.stream().map(e -> e.getType())
 				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
-		final TypeEtreVivant typeActuel = this.etreVivant == null ? null : this.etreVivant.getType();
+		final List<GroupeReproduction> grps = params.getListeGroupes().stream().filter(g -> g.isReproductible(map))
+				.collect(Collectors.toList());
 
-		final TypeEtreVivant nouveauType = params.seReproduire(typeActuel, map);
+		if (CollectionUtils.isEmpty(grps)) return null;
+		final GroupeReproduction grpGagnant = grps.get(new Random().nextInt(grps.size()));
+		final TypeEtreVivant t = grpGagnant.seReproduire();
 
-		return nouveauType;
+		final EtreVivant e;
+		if (t != null) {
+			e = new EtreVivant(this, t);
+		} else {
+			e = null;
+		}
+		return e;
+	}
+
+	public void ajouterEtreVivant(final EtreVivant e) {
+		this.listeEtreVivant.add(e);
+	}
+
+	public int nbEtreVivant() {
+		return this.listeEtreVivant.size();
 	}
 }

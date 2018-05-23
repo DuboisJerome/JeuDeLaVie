@@ -1,8 +1,8 @@
 package fr.jeudelavie.modele.carte;
 
 import java.util.Arrays;
-import java.util.function.Consumer;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -26,8 +26,8 @@ public class Carte {
 		this.hauteur = hauteur;
 	}
 
-	public void visiter(final Consumer<Case> consumer) {
-		Arrays.stream(this.grille).forEach(l -> Arrays.stream(l).forEach(consumer));
+	public Stream<Case> stream() {
+		return Arrays.stream(this.grille).flatMap(ligne -> Arrays.stream(ligne));
 	}
 
 	public void genererCarteVide() {
@@ -37,7 +37,7 @@ public class Carte {
 		IntStream.range(0, this.hauteur)
 				.forEach(y -> IntStream.range(0, this.largeur).forEach(x -> this.grille[y][x] = new Case(x, y)));
 		// init voisines + type
-		visiter(c -> {
+		stream().forEach(c -> {
 			// init voisine
 			c.setNordOuest(calculVoisineCarte(c, Direction.NORDOUEST));
 			c.setNord(calculVoisineCarte(c, Direction.NORD));
